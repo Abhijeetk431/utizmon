@@ -1,34 +1,71 @@
-# Utizmon Virtualized Monitoring System
+# Network Architecture
 
-## Network Architecture
+This repository deploys a virtualized environment consisting of three VMs:
 
-This repository deploys a virtualized monitoring system consisting of multiple VMs on a Windows host using Vagrant and VirtualBox. The architecture consists of:
+- **Master Node:** Collects performance metrics and hosts a web application.
+- **Edge Devices (2 Nodes):** Stream performance metrics to the master node.
 
-- **Master Node (utizmon_master_vm1)**:
+## Network Setup
 
-  - Collects performance metrics from edge devices.
-  - Hosts a web application that displays the performance data.
-  - The web application is exposed to the host machine using a **bridged network**, allowing the host browser to access it.
+1. **Host-Only Network:** Connects all VMs internally to facilitate metric streaming.
+2. **Bridged Network:** Connects the master node to the host machine, allowing access to the web app.
 
-- **Edge Devices (utizmon_edge_vm2 & utizmon_edge_vm3)**:
-  - Stream performance metrics to the master node over a **host-only network**.
-  - Do not have a direct network connection with the host machine.
+The web application running on the master node processes the collected metrics and exposes them via the bridge network, making it accessible to the host machine's browser. Even though the edge devices are not directly connected to the host, their metrics are viewable via the web application.
 
-This setup ensures that the host machine can access the web application on the master node while keeping the edge devices isolated from the host.
+---
 
-## Prerequisites
+# Steps to Use the Repo
 
-Before using this repository, ensure that the following dependencies are installed on your Windows machine:
+### Prerequisites
 
-- [Oracle VirtualBox](https://www.virtualbox.org/)
-- [Vagrant](https://www.vagrantup.com/)
-- [Git](https://git-scm.com/)
+- Windows OS
+- Oracle VirtualBox installed
+- Git installed
+- Git Bash (for executing `make` commands)
 
-## Steps to Use the Repository
+### Cloning the Repository
 
-1. **Clone the repository**  
-   Open Git Bash and run:
-   ```sh
-   git clone git@github.com:Abhijeetk431/utizmon.git
-   cd utizmon
-   ```
+```sh
+git clone git@github.com:Abhijeetk431/utizmon.git
+cd utizmon
+```
+
+### Creating Virtual Machines
+
+To create all VMs and set up networking, SSH, and configurations:
+
+```sh
+make create-all
+```
+
+### Running the Application
+
+Once the VMs are up, run the Ansible playbook to set up and start the web application:
+
+```sh
+make run
+```
+
+This will deploy the necessary files and services on the VMs.
+
+### Accessing the Application
+
+Once deployed, the web application will be available at:
+
+```sh
+http://<MASTER_VM_IP>:5000
+```
+
+You can find the exact IP by running:
+
+```sh
+vagrant ssh utizmon_master_vm1 -c "hostname -I | awk '{print $1}'"
+```
+
+### Destroying the Virtual Machines
+
+To remove all VMs:
+
+```sh
+make destroy-all
+```
