@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Real-Time System Monitoring</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h1>Edge Device System Monitor</h1>
+    <div id="stats-container"></div>
+
+    <script>
+        var socket = io.connect("http://" + document.domain + ":" + location.port);
+
+        socket.on("update_ui", function(data) {
+            let container = document.getElementById("stats-container");
+            container.innerHTML = "";  // Clear previous entries
+            
+            for (const [vm_name, stats] of Object.entries(data.stats)) {
+                let html = `<h2>${vm_name}</h2>`;
+                html += "<ul>";
+                stats.forEach(entry => {
+                    html += `<li>CPU: ${entry.cpu}% | Memory: ${entry.memory}%</li>`;
+                });
+                html += "</ul>";
+                container.innerHTML += html;
+            }
+        });
+    </script>
+</body>
+</html>

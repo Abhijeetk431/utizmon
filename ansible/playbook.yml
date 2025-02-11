@@ -1,0 +1,51 @@
+- name: Setup Master Server
+  hosts: master
+  become: yes
+  tasks:
+    - name: Ensure /app directory exists
+      file:
+        path: /app
+        state: directory
+        mode: '0755'
+
+    - name: Copy server.py to /app
+      copy:
+        src: ../utizmon/server.py
+        dest: /app/server.py
+        mode: '0755'
+
+    - name: Copy templates folder to /app
+      copy:
+        src: ../utizmon/templates/
+        dest: /app/templates/
+        mode: '0755'
+
+    - name: Start server on Master and log output
+      shell: nohup python3 /app/server.py > /app/server.log 2>&1 &
+      args:
+        chdir: /app
+      async: 10
+      poll: 0
+
+- name: Setup Edge Devices
+  hosts: edges
+  become: yes
+  tasks:
+    - name: Ensure /app directory exists
+      file:
+        path: /app
+        state: directory
+        mode: '0755'
+
+    - name: Copy app.py to /app
+      copy:
+        src: ../utizmon/app.py
+        dest: /app/app.py
+        mode: '0755'
+
+    - name: Start service on Edge VMs and log output
+      shell: nohup python3 /app/app.py > /app/app.log 2>&1 &
+      args:
+        chdir: /app
+      async: 10
+      poll: 0
